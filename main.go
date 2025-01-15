@@ -23,8 +23,7 @@ func main() {
 		cmd, ok := commands[input[0]]
 
 		if ok {
-			err := cmd.callback()
-			if err != nil {
+			if err := cmd.callback(); err != nil {
 				fmt.Println(err)
 			}
 		} else {
