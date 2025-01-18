@@ -7,9 +7,16 @@ import (
 	"strings"
 )
 
+var locationUrl = "https://pokeapi.co/api/v2/location-area"
+
 func main() {
 	initCommands()
 	scanner := bufio.NewScanner(os.Stdin)
+
+	config := &config{
+		Next:     &locationUrl,
+		Previous: nil,
+	}
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -23,7 +30,7 @@ func main() {
 		cmd, ok := commands[input[0]]
 
 		if ok {
-			if err := cmd.callback(); err != nil {
+			if err := cmd.callback(config); err != nil {
 				fmt.Println(err)
 			}
 		} else {
@@ -46,26 +53,17 @@ func initCommands() {
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
+		"map": {
+			name:        "map",
+			description: "Get the next page of locations",
+			callback:    commandMapf,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Get the previous page of locations",
+			callback:    commandMapb,
+		},
 	}
-}
-
-func commandExit() error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-
-	return nil
-}
-
-func commandHelp() error {
-	fmt.Println("Welcome to the Pokedex!")
-	fmt.Println("Usage:")
-	fmt.Println("")
-
-	for _, cmd := range commands {
-		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
-	}
-
-	return nil
 }
 
 func cleanInput(text string) []string {
@@ -74,8 +72,13 @@ func cleanInput(text string) []string {
 	return strings.Fields(lower)
 }
 
+type config struct {
+	Next     *string
+	Previous *string
+}
+
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
